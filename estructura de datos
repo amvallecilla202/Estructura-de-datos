@@ -1,0 +1,180 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Estructura del producto
+typedef struct Producto {
+    int codigo;
+    char nombre[50];
+    int cantidad;
+    int precio;
+    struct Producto *siguiente;
+} Producto;
+
+Producto *inicio = NULL;
+Producto *fin = NULL;
+
+// Función para agregar un producto
+void agregar_producto() {
+    Producto *nuevo = (Producto *)malloc(sizeof(Producto));
+    if (nuevo == NULL) {
+        printf("Error: No se pudo asignar memoria.\n");
+        return;
+    }
+
+    printf("\nIngrese código del producto: ");
+    scanf("%d", &nuevo->codigo);
+    printf("Ingrese nombre del producto: ");
+    scanf(" %[^\n]", nuevo->nombre);
+    printf("Ingrese cantidad: ");
+    scanf("%d", &nuevo->cantidad);
+    printf("Ingrese precio por unidad: ");
+    scanf("%d", &nuevo->precio);
+
+    nuevo->siguiente = NULL;
+
+    if (inicio == NULL) {
+        inicio = fin = nuevo;
+    } else {
+        fin->siguiente = nuevo;
+        fin = nuevo;
+    }
+
+    printf("Producto agregado con éxito.\n");
+}
+
+// Función para mostrar todos los productos
+void mostrar_productos() {
+    if (inicio == NULL) {
+        printf("\nNo hay productos registrados.\n");
+        return;
+    }
+
+    Producto *actual = inicio;
+    printf("\n--- Lista de Productos ---\n");
+    printf("-----------------------------------------\n");
+    printf("| Código | Nombre        | Cantidad | Precio |\n");
+    printf("-----------------------------------------\n");
+
+    while (actual != NULL) {
+        printf("| %-6d | %-12s | %-8d | %-6d |\n",
+               actual->codigo, actual->nombre, actual->cantidad, actual->precio);
+        actual = actual->siguiente;
+    }
+
+    printf("-----------------------------------------\n");
+}
+
+// Función para actualizar la cantidad de un producto
+void actualizar_cantidad() {
+    int codigo, cantidad;
+    printf("\nIngrese el código del producto: ");
+    scanf("%d", &codigo);
+
+    Producto *actual = inicio;
+    while (actual != NULL) {
+        if (actual->codigo == codigo) {
+            printf("Ingrese la cantidad a vender: ");
+            scanf("%d", &cantidad);
+
+            if (cantidad > actual->cantidad) {
+                printf("Stock insuficiente.\n");
+                return;
+            }
+
+            actual->cantidad -= cantidad;
+            printf("Nueva cantidad disponible: %d\n", actual->cantidad);
+            return;
+        }
+        actual = actual->siguiente;
+    }
+
+    printf("Producto no encontrado.\n");
+}
+
+// Función para eliminar productos agotados
+void eliminar_producto() {
+    if (inicio == NULL) {
+        printf("\nNo hay productos en el inventario.\n");
+        return;
+    }
+
+    Producto *actual = inicio;
+    Producto *anterior = NULL;
+
+    while (actual != NULL) {
+        if (actual->cantidad == 0) {
+            if (anterior == NULL) {
+                inicio = actual->siguiente;
+            } else {
+                anterior->siguiente = actual->siguiente;
+            }
+
+            if (actual == fin) {
+                fin = anterior;
+            }
+
+            printf("Producto eliminado: %s\n", actual->nombre);
+            free(actual);
+            return;
+        }
+        anterior = actual;
+        actual = actual->siguiente;
+    }
+
+    printf("No hay productos agotados para eliminar.\n");
+}
+
+// Función para calcular el costo total del inventario
+void calcular_costo_total() {
+    int costo_total = 0;
+    Producto *actual = inicio;
+
+    while (actual != NULL) {
+        costo_total += actual->cantidad * actual->precio;
+        actual = actual->siguiente;
+    }
+
+    printf("\nCosto total del inventario: %d\n", costo_total);
+}
+
+// Función para liberar toda la memoria
+void liberar_memoria() {
+    Producto *actual = inicio;
+    while (actual != NULL) {
+        Producto *temp = actual;
+        actual = actual->siguiente;
+        printf("Liberando memoria de: %s\n", temp->nombre);
+        free(temp);
+    }
+    inicio = fin = NULL;
+    printf("Memoria liberada correctamente.\n");
+}
+
+// Menú principal
+int main() {
+    int opcion;
+    do {
+        printf("\n--- Menú ---\n");
+        printf("1. Registrar producto\n");
+        printf("2. Mostrar productos\n");
+        printf("3. Vender producto\n");
+        printf("4. Calcular costo total\n");
+        printf("5. Eliminar productos agotados\n");
+        printf("6. Salir\n");
+        printf("Seleccione una opción: ");
+        scanf("%d", &opcion);
+
+        switch (opcion) {
+            case 1: agregar_producto(); break;
+            case 2: mostrar_productos(); break;
+            case 3: actualizar_cantidad(); break;
+            case 4: calcular_costo_total(); break;
+            case 5: eliminar_producto(); break;
+            case 6: liberar_memoria(); break;
+            default: printf("Opción no válida. Intente de nuevo.\n");
+        }
+    } while (opcion != 6);
+
+    return 0;
+}
